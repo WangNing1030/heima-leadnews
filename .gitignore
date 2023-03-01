@@ -5,6 +5,7 @@
 *.iws
 out
 gen
+target
 
 # Compiled class file
 *.class
