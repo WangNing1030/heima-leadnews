@@ -82,6 +82,7 @@
             <artifactId>kafka-streams</artifactId>
         </dependency>
 
+        <!-- alinyun -->
         <dependency>
             <groupId>com.aliyun</groupId>
             <artifactId>aliyun-java-sdk-core</artifactId>
