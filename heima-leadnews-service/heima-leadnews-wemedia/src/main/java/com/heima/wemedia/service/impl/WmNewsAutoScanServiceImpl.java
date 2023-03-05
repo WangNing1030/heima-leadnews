@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.heima.apis.article.IArticleClient;
 import com.heima.common.aliyun.GreenImageScan;
 import com.heima.common.aliyun.GreenTextScan;
+import com.heima.common.tess4j.Tess4jClient;
 import com.heima.file.service.FileStorageService;
 import com.heima.model.article.dtos.ArticleDto;
 import com.heima.model.common.dtos.ResponseResult;
@@ -26,6 +27,9 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -60,6 +64,9 @@ public class WmNewsAutoScanServiceImpl implements WmNewsAutoScanService {
 
     @Autowired
     private WmSensitiveMapper wmSensitiveMapper;
+
+    @Autowired
+    private Tess4jClient tess4jClient;
 
     /**
      * 自媒体文章审核
@@ -190,10 +197,28 @@ public class WmNewsAutoScanServiceImpl implements WmNewsAutoScanService {
 
         // 图片去重 and 下载图片到minIO中
         images = images.stream().distinct().collect(Collectors.toList());
-        for (String image : images) {
-            byte[] bytes = fileStorageService.downLoadFile(image);
-            imageList.add(bytes);
+
+        try {
+            for (String image : images) {
+                byte[] bytes = fileStorageService.downLoadFile(image);
+
+                // byte[] -> bufferedImage
+                ByteArrayInputStream in = new ByteArrayInputStream(bytes);
+                BufferedImage bufferedImage = ImageIO.read(in);
+                // 图片识别
+                String result = tess4jClient.doOCR(bufferedImage);
+                // 过滤图片识别出的文字
+                boolean isSensitive = handleSensitiveScan(result, wmNews);
+                if (!isSensitive) {
+                    return isSensitive;
+                }
+
+                imageList.add(bytes);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+
 
         // 审核图片
         try {
