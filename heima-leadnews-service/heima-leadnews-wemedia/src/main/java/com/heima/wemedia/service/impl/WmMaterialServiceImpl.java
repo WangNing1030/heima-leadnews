@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.heima.common.constants.WemediaConstants;
 import com.heima.common.exception.CustomException;
 import com.heima.file.service.FileStorageService;
 import com.heima.model.common.dtos.PageResponseResult;
@@ -14,6 +15,7 @@ import com.heima.model.wemedia.dtos.WmMaterialDto;
 import com.heima.model.wemedia.pojos.WmMaterial;
 import com.heima.model.wemedia.pojos.WmNewsMaterial;
 import com.heima.utils.thread.WmThreadLocalUtil;
+import com.heima.wemedia.controller.v1.WmNewsController;
 import com.heima.wemedia.mapper.WmMaterialMapper;
 import com.heima.wemedia.mapper.WmNewsMaterialMapper;
 import com.heima.wemedia.service.WmMaterialService;
@@ -155,7 +157,7 @@ public class WmMaterialServiceImpl extends ServiceImpl<WmMaterialMapper, WmMater
             return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID, "参数失效");
         }
         WmMaterial wmMaterial = getById(id);
-        wmMaterial.setIsCollection((short) 1);
+        wmMaterial.setIsCollection(WemediaConstants.COLLECT_MATERIAL);
         updateById(wmMaterial);
         return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
     }
@@ -172,7 +174,7 @@ public class WmMaterialServiceImpl extends ServiceImpl<WmMaterialMapper, WmMater
             return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID, "参数失效");
         }
         WmMaterial wmMaterial = getById(id);
-        wmMaterial.setIsCollection((short) 0);
+        wmMaterial.setIsCollection(WemediaConstants.CANCEL_COLLECT_MATERIAL);
         updateById(wmMaterial);
         return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
     }
