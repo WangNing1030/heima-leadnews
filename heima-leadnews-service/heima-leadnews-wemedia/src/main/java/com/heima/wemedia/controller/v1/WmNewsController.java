@@ -31,4 +31,9 @@ public class WmNewsController {
     public ResponseResult viewNews(@PathVariable(value = "id") Integer id) {
         return wmNewsService.viewNews(id);
     }
+
+    @GetMapping("/del_news/{id}")
+    public ResponseResult deleteNews(@PathVariable(value = "id") Integer id) {
+        return wmNewsService.deleteNews(id);
+    }
 }

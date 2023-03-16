@@ -21,4 +21,9 @@ public class WemediaConstants {
 
     public static final Short WM_CONTENT_REFERENCE = 0;
     public static final Short WM_COVER_REFERENCE = 1;
+
+    /**
+     * 已发布
+     */
+    public static final Short WM_NEWS_STATUS_PUBLISHED = 9;
 }

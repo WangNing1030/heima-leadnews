@@ -31,4 +31,12 @@ public interface WmNewsService extends IService<WmNews> {
      * @return
      */
     ResponseResult viewNews(Integer id);
+
+    /**
+     * 文章删除
+     *
+     * @param id
+     * @return
+     */
+    ResponseResult deleteNews(Integer id);
 }

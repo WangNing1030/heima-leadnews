@@ -4,6 +4,7 @@ package com.heima.wemedia.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -171,10 +172,36 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> impleme
             return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID, "参数失效");
         }
         WmNews wmNews = getById(id);
-        if (wmNews == null){
+        if (wmNews == null) {
             return ResponseResult.errorResult(AppHttpCodeEnum.DATA_NOT_EXIST, "文章不存在");
         }
         return ResponseResult.okResult(wmNews);
+    }
+
+
+    /**
+     * 文章删除
+     *
+     * @param id
+     * @return
+     */
+    @Override
+    public ResponseResult deleteNews(Integer id) {
+        if (id == null) {
+            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID, "文章Id不可缺少");
+        }
+        WmNews wmNews = getById(id);
+        if (wmNews == null) {
+            return ResponseResult.errorResult(AppHttpCodeEnum.DATA_NOT_EXIST, "文章不存在");
+        }
+        // 文章是否审核通过发布
+        boolean isPublish= wmNews.getStatus().equals(WemediaConstants.WM_NEWS_STATUS_PUBLISHED);
+        if (isPublish) {
+            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID,"文章已发布，不能删除");
+        }
+        // 删除文章
+        removeById(id);
+        return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
     }
 
     /**
