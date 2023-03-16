@@ -2,16 +2,20 @@ package com.heima.wemedia.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.heima.common.exception.CustomException;
 import com.heima.file.service.FileStorageService;
 import com.heima.model.common.dtos.PageResponseResult;
 import com.heima.model.common.dtos.ResponseResult;
 import com.heima.model.common.enums.AppHttpCodeEnum;
 import com.heima.model.wemedia.dtos.WmMaterialDto;
 import com.heima.model.wemedia.pojos.WmMaterial;
+import com.heima.model.wemedia.pojos.WmNewsMaterial;
 import com.heima.utils.thread.WmThreadLocalUtil;
 import com.heima.wemedia.mapper.WmMaterialMapper;
+import com.heima.wemedia.mapper.WmNewsMaterialMapper;
 import com.heima.wemedia.service.WmMaterialService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 
@@ -31,6 +36,9 @@ public class WmMaterialServiceImpl extends ServiceImpl<WmMaterialMapper, WmMater
 
     @Autowired
     private FileStorageService fileStorageService;
+
+    @Autowired
+    private WmNewsMaterialMapper wmNewsMaterialMapper;
 
     /**
      * 素材图片上传
@@ -100,5 +108,38 @@ public class WmMaterialServiceImpl extends ServiceImpl<WmMaterialMapper, WmMater
         PageResponseResult responseResult = new PageResponseResult(dto.getPage(), dto.getSize(), (int) page.getTotal());
         responseResult.setData(page.getRecords());
         return responseResult;
+    }
+
+    /**
+     * 素材图片删除
+     *
+     * @param id 图片id
+     * @return
+     */
+    @Override
+    public ResponseResult deletePicture(Integer id) {
+        if (id == null) {
+            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID, "图片参数失效");
+        }
+        WmMaterial wmMaterial = getById(id);
+        // 素材图片不存在
+        if (wmMaterial == null) {
+            throw new CustomException(AppHttpCodeEnum.DATA_NOT_EXIST);
+        }
+        // 判断是否有文章引用该素材图片
+        List<WmNewsMaterial> wmNewsMaterials = wmNewsMaterialMapper.selectList(Wrappers.<WmNewsMaterial>lambdaQuery().eq(WmNewsMaterial::getMaterialId, id));
+        if (wmNewsMaterials.size() != 0) {
+            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID, "文件删除失败，图片被文章引用");
+        }
+        try {
+            // 从minIO中删除图片
+            fileStorageService.delete(wmMaterial.getUrl());
+            // 从数据库中删除图片
+            removeById(id);
+        } catch (Exception e) {
+            log.info("minIO and MySQL 删除 素材图片失败：", e);
+            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID, "文件删除失败");
+        }
+        return ResponseResult.okResult(id);
     }
 }
