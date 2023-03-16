@@ -142,4 +142,38 @@ public class WmMaterialServiceImpl extends ServiceImpl<WmMaterialMapper, WmMater
         }
         return ResponseResult.okResult(id);
     }
+
+    /**
+     * 收藏素材图片
+     *
+     * @param id
+     * @return
+     */
+    @Override
+    public ResponseResult collect(Integer id) {
+        if (id == null) {
+            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID, "参数失效");
+        }
+        WmMaterial wmMaterial = getById(id);
+        wmMaterial.setIsCollection((short) 1);
+        updateById(wmMaterial);
+        return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
+    }
+
+    /**
+     * 取消收藏素材图片
+     *
+     * @param id
+     * @return
+     */
+    @Override
+    public ResponseResult cancelCollect(Integer id) {
+        if (id == null) {
+            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID, "参数失效");
+        }
+        WmMaterial wmMaterial = getById(id);
+        wmMaterial.setIsCollection((short) 0);
+        updateById(wmMaterial);
+        return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
+    }
 }
