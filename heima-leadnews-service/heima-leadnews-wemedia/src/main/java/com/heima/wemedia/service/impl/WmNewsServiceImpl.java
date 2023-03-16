@@ -4,7 +4,6 @@ package com.heima.wemedia.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -195,12 +194,40 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> impleme
             return ResponseResult.errorResult(AppHttpCodeEnum.DATA_NOT_EXIST, "文章不存在");
         }
         // 文章是否审核通过发布
-        boolean isPublish= wmNews.getStatus().equals(WemediaConstants.WM_NEWS_STATUS_PUBLISHED);
+        boolean isPublish = wmNews.getStatus().equals(WmNews.Status.PUBLISHED.getCode());
         if (isPublish) {
-            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID,"文章已发布，不能删除");
+            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID, "文章已发布，不能删除");
         }
         // 删除文章
         removeById(id);
+        return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
+    }
+
+    /**
+     * 文章上下架
+     *
+     * @param dto
+     * @return
+     */
+    @Override
+    public ResponseResult downOrUp(WmNewsDto dto) {
+        if (dto == null || dto.getId() == null) {
+            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID, "文章Id不可缺少");
+        }
+        WmNews wmNews = getById(dto.getId());
+        if (wmNews == null) {
+            return ResponseResult.errorResult(AppHttpCodeEnum.DATA_NOT_EXIST, "文章不存在");
+        }
+        if (!wmNews.getStatus().equals(WmNews.Status.PUBLISHED.getCode())) {
+            return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID, "当前文章不是发布状态，不能上下架");
+        }
+        Short enable = wmNews.getEnable();
+        if (enable.equals(WemediaConstants.WM_NEWS_UP_ENABLE)) {
+            wmNews.setEnable(WemediaConstants.WM_NEWS_DOWN_ENABLE);
+        } else {
+            wmNews.setEnable(WemediaConstants.WM_NEWS_UP_ENABLE);
+        }
+        updateById(wmNews);
         return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
     }
 

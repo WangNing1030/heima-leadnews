@@ -36,4 +36,9 @@ public class WmNewsController {
     public ResponseResult deleteNews(@PathVariable(value = "id") Integer id) {
         return wmNewsService.deleteNews(id);
     }
+
+    @PostMapping("/down_or_up")
+    public  ResponseResult downOrUp(@RequestBody WmNewsDto dto) {
+        return wmNewsService.downOrUp(dto);
+    }
 }
