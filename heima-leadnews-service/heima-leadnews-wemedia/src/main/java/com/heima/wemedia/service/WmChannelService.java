@@ -15,5 +15,4 @@ public interface WmChannelService extends IService<WmChannel> {
      * @return
      */
     ResponseResult findAll();
-
 }
