@@ -222,12 +222,11 @@ public class WmNewsServiceImpl extends ServiceImpl<WmNewsMapper, WmNews> impleme
             return ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID, "当前文章不是发布状态，不能上下架");
         }
         Short enable = wmNews.getEnable();
-        if (enable.equals(WemediaConstants.WM_NEWS_UP_ENABLE)) {
-            wmNews.setEnable(WemediaConstants.WM_NEWS_DOWN_ENABLE);
-        } else {
-            wmNews.setEnable(WemediaConstants.WM_NEWS_UP_ENABLE);
+        // 修改文章enable
+        if(dto.getEnable() != null && dto.getEnable() > -1 && dto.getEnable() < 2){
+            update(Wrappers.<WmNews>lambdaUpdate().set(WmNews::getEnable,dto.getEnable())
+                    .eq(WmNews::getId,wmNews.getId()));
         }
-        updateById(wmNews);
         return ResponseResult.okResult(AppHttpCodeEnum.SUCCESS);
     }
 
